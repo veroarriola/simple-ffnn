@@ -1,6 +1,6 @@
 nn-data/
-save_dir/
-save_dir_001/
+nn-saved/
+!nn-saved/net_003/nn_config.yaml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

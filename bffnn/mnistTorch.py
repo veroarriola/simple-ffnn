@@ -7,7 +7,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-import ignite.metrics as metrics
+import yaml
+from pathlib import Path
+import ignite.metrics as metrics  # TODO: would be more efficient for accuracy
+
+
+CONFIG_FILE_NAME = 'nn_config.yaml'
+RESULTS_DIR = 'nn-saved'
 
 
 class MNISTDataSet:
@@ -144,30 +150,48 @@ class Trainer:
         return last_loss
 
 
+def load_config(load_dir):
+    '''
+    Loads the configuration dictionary for creation/trainning of a net.
+    '''
+    load_path = f"{RESULTS_DIR}/{load_dir}/{CONFIG_FILE_NAME}"
+    with open(load_path) as stream:
+        try:
+            net_config = yaml.safe_load(stream)
+            print(f"Loaded config from {load_path}")
+            return net_config
+        except yaml.YAMLError as exc:
+            print(exc)
+
+def save_config(net_config):
+    '''
+    Saves the configuration dictionary for creation/trainning of a net.
+    '''
+    save_path = f"{RESULTS_DIR}/{net_config['SAVE_PATH']}/{CONFIG_FILE_NAME}"
+
+    # if dir does not exist, create it.
+    Path(net_config['SAVE_PATH']).mkdir(parents=True, exist_ok=True)
+
+    # save configuration dictionary
+    with open(save_path, 'w') as outfile:
+        yaml.dump(net_config, outfile)
+        print(f"yaml writen to {save_path}")
+
+
 def example():
-    IMG_INPUT_SIZE = 28
-    HIDDEN1_SIZE = 16
-    HIDDEN2_SIZE = 9
-    OUTPUT_SIZE = 10
+    LOAD_DIR = "net_003"
+    net_config = load_config(LOAD_DIR)
 
-    DATA_DIR = "../nn-data"
-    BATCH_SIZE = 10
-
-    LEARNING_RATE = 0.003
-    NUM_EPOCHS = 100
-    SAVE_EVERY = 1
-    SAVE_PATH = "../save_dir"
-
-    from pathlib import Path
-    Path(SAVE_PATH).mkdir(parents=True, exist_ok=True)
-
-    net = MNISTNet(IMG_INPUT_SIZE * IMG_INPUT_SIZE, HIDDEN1_SIZE, HIDDEN2_SIZE, OUTPUT_SIZE)
-    data_set = MNISTDataSet(DATA_DIR, BATCH_SIZE)
+    net = MNISTNet(net_config['IMG_INPUT_SIZE'] * net_config['IMG_INPUT_SIZE'],
+                   net_config['HIDDEN1_SIZE'],
+                   net_config['HIDDEN2_SIZE'],
+                   net_config['OUTPUT_SIZE'])
+    data_set = MNISTDataSet(net_config['DATA_DIR'], net_config['BATCH_SIZE'])
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(net.parameters(), lr=LEARNING_RATE)
+    optimizer = optim.Adam(net.parameters(), lr=net_config['LEARNING_RATE'])
     trainer = Trainer(net, criterion, optimizer)
-    last_lost = trainer.full_train(NUM_EPOCHS, data_set, SAVE_EVERY, SAVE_PATH)
+    last_lost = trainer.full_train(net_config['NUM_EPOCHS'], data_set, net_config['SAVE_EVERY'], net_config['SAVE_PATH'])
     print("Loss after training is", last_lost)
 
 

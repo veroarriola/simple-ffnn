@@ -15,4 +15,5 @@ cd 4.4/python/
 ./bin/python3.11 -m pip install torch torchvision torchaudio
 ./bin/python3.11 -m pip install pytorch-ignite
 ./bin/python3.11 -m pip install seaborn seaborn_image
+./bin/python3.11 -m pip install pyyaml
 ```
