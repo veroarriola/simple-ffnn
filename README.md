@@ -13,6 +13,7 @@ Código básico para entrenar una red ffnn y crear la animación en blender
 cd 4.4/python/
 ./bin/python3.11 -m pip install --upgrade pip
 ./bin/python3.11 -m pip install torch torchvision torchaudio
+./bin/python3.11 -m pip install tensorboard
 ./bin/python3.11 -m pip install pytorch-ignite
 ./bin/python3.11 -m pip install seaborn seaborn_image
 ./bin/python3.11 -m pip install pyyaml

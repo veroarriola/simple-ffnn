@@ -128,13 +128,13 @@ class Trainer:
         return acc / len(dataloader)
 
 
-    def full_train(self, num_epocs, data_set, save_every=1, save_path="save_dir"):
+    def full_train(self, num_epocs, data_set, save_every=1, save_dir=f"{RESULTS_DIR}/save_dir"):
         '''
         Train for the number of epocs.
         save_every: save params and statistics every indicated steps if cero or
                     less it doesn't save.
         '''
-        with open(f"{save_path}/stats.txt", "a") as myfile:
+        with open(f"{save_dir}/stats.txt", "a") as myfile:
             myfile.write("Epoch\tLoss\tTest accuracy\n")
 
         last_loss = -1
@@ -143,9 +143,9 @@ class Trainer:
             print(f"Completed epoch {epoch} with loss {last_loss}")
 
             if save_every > 0 and epoch % save_every == 0:
-                self.net.save(f"{save_path}/{epoch}")
+                self.net.save(f"{save_dir}/{epoch}")
                 accuracy = self.accuracy(data_set.testloader_all)
-                with open(f"{save_path}/stats.txt", "a") as myfile:
+                with open(f"{save_dir}/stats.txt", "a") as myfile:
                     myfile.write(f"{epoch}\t{last_loss}\t{accuracy}\n")
         return last_loss
 
@@ -167,10 +167,11 @@ def save_config(net_config):
     '''
     Saves the configuration dictionary for creation/trainning of a net.
     '''
-    save_path = f"{RESULTS_DIR}/{net_config['SAVE_PATH']}/{CONFIG_FILE_NAME}"
+    save_dir = f"{RESULTS_DIR}/{net_config['SAVE_DIR']}"
+    save_path = f"{save_dir}/{CONFIG_FILE_NAME}"
 
     # if dir does not exist, create it.
-    Path(net_config['SAVE_PATH']).mkdir(parents=True, exist_ok=True)
+    Path(save_dir).mkdir(parents=True, exist_ok=True)
 
     # save configuration dictionary
     with open(save_path, 'w') as outfile:
@@ -191,7 +192,7 @@ def example():
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(net.parameters(), lr=net_config['LEARNING_RATE'])
     trainer = Trainer(net, criterion, optimizer)
-    last_lost = trainer.full_train(net_config['NUM_EPOCHS'], data_set, net_config['SAVE_EVERY'], net_config['SAVE_PATH'])
+    last_lost = trainer.full_train(net_config['NUM_EPOCHS'], data_set, net_config['SAVE_EVERY'], f"{RESULTS_DIR}/{net_config['SAVE_DIR']}")
     print("Loss after training is", last_lost)
 
 
