@@ -6,6 +6,7 @@ Código básico para entrenar una red ffnn y crear la animación en blender
 ## Instalación
 
 * Instalar [Blender 4.4](https://www.blender.org/thanks/) descargando la versión en archivo comprimido y descomprimiendo.
+* Si se utiliza en algún lenguaje que no sea inglés, entrar a ```Editar->Preferencias->Interfaz->Idioma``` y desmarcar ```Traducir->Nuevos datos```, pues esto traduce los nombres de los nodos en la API.
 * Clonar este repositorio dentro del directorio recién creado, al lado del ejecutable ```blender```.
 * Instalar prerrequisitos desde la instalación local de ```python```:
 

@@ -7,13 +7,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
+import os
 import yaml
 from pathlib import Path
-import ignite.metrics as metrics  # TODO: would be more efficient for accuracy
-
-
-CONFIG_FILE_NAME = 'nn_config.yaml'
-RESULTS_DIR = 'nn-saved'
+#import ignite.metrics as metrics  # TODO: would be more efficient for accuracy
 
 
 class MNISTDataSet:
@@ -128,12 +125,15 @@ class Trainer:
         return acc / len(dataloader)
 
 
-    def full_train(self, num_epocs, data_set, save_every=1, save_dir=f"{RESULTS_DIR}/save_dir"):
+    def full_train(self, num_epocs, data_set, save_every=1, save_dir=None):
         '''
         Train for the number of epocs.
         save_every: save params and statistics every indicated steps if cero or
                     less it doesn't save.
         '''
+        if save_every > 0 and not save_dir:
+            raise Exception
+        
         with open(f"{save_dir}/stats.txt", "a") as myfile:
             myfile.write("Epoch\tLoss\tTest accuracy\n")
 
@@ -143,58 +143,93 @@ class Trainer:
             print(f"Completed epoch {epoch} with loss {last_loss}")
 
             if save_every > 0 and epoch % save_every == 0:
-                self.net.save(f"{save_dir}/{epoch}")
+                self.net.save(f"{save_dir}/{epoch}.pth")
                 accuracy = self.accuracy(data_set.testloader_all)
                 with open(f"{save_dir}/stats.txt", "a") as myfile:
                     myfile.write(f"{epoch}\t{last_loss}\t{accuracy}\n")
         return last_loss
 
 
-def load_config(load_dir):
+class NetConfig:
     '''
-    Loads the configuration dictionary for creation/trainning of a net.
+    Contains configuration parameters for creation/trainning of a net.
     '''
-    load_path = f"{RESULTS_DIR}/{load_dir}/{CONFIG_FILE_NAME}"
-    with open(load_path) as stream:
-        try:
-            net_config = yaml.safe_load(stream)
-            print(f"Loaded config from {load_path}")
-            return net_config
-        except yaml.YAMLError as exc:
-            print(exc)
+    CONFIG_FILE_NAME = 'nn_config.yaml'
+    DATA_DIR = 'nn-data'
+    RESULTS_DIR = 'nn-saved'
 
-def save_config(net_config):
-    '''
-    Saves the configuration dictionary for creation/trainning of a net.
-    '''
-    save_dir = f"{RESULTS_DIR}/{net_config['SAVE_DIR']}"
-    save_path = f"{save_dir}/{CONFIG_FILE_NAME}"
+    def __init__(self, module_dir, model_dir):
+        '''
+        module_dir: directory where this script is located at excecution time
+        model_dir: name of the directory where training info is/will be placed
+        '''
+        self.module_dir = module_dir
+        self._model_dir = os.path.join(module_dir, NetConfig.RESULTS_DIR, model_dir)
+        self._data_dir = os.path.join(module_dir, NetConfig.DATA_DIR)
+        self._load_config()
 
-    # if dir does not exist, create it.
-    Path(save_dir).mkdir(parents=True, exist_ok=True)
+    @property
+    def model_dir(self):
+        return self._model_dir
+    
+    @property
+    def data_dir(self):
+        return self._data_dir
+    
+    def files_of_weights(self):
+        weights_files = [file_name for file_name in os.listdir(self.model_dir) if file_name.endswith(".pth")]
+        weights_files.sort(key=lambda k: int(k[:-4]))
+        return weights_files
 
-    # save configuration dictionary
-    with open(save_path, 'w') as outfile:
-        yaml.dump(net_config, outfile)
-        print(f"yaml writen to {save_path}")
+    def __getitem__(self, key):
+        return self.params[key]
+
+    def _load_config(self):
+        '''
+        Loads the configuration dictionary for creation/trainning of a net.
+        '''
+        load_path = os.path.join(self.model_dir, NetConfig.CONFIG_FILE_NAME)
+        with open(load_path) as stream:
+            try:
+                net_config = yaml.safe_load(stream)
+                print(f"Loaded config from {load_path}")
+                self.params = net_config
+            except yaml.YAMLError as exc:
+                print(exc)
+
+    def save_config(self):
+        '''
+        Saves the configuration dictionary for creation/trainning of a net.
+        '''
+        save_path = os.path.join(self.model_dir, NetConfig.CONFIG_FILE_NAME)
+
+        # if dir does not exist, create it.
+        Path(self.model_dir).mkdir(parents=True, exist_ok=True)
+
+        # save configuration dictionary
+        with open(save_path, 'w') as outfile:
+            yaml.dump(self, outfile)
+            print(f"yaml writen to {save_path}")
+
+    def __str__(self):
+        return f"MODEL_DIR: {self.model_dir}\nMODEL_DIR: {self.data_dir}\n{str(self.params)}"
 
 
-def example():
-    LOAD_DIR = "net_003"
-    net_config = load_config(LOAD_DIR)
+def example(load_dir):
+    net_config = NetConfig(load_dir)
 
     net = MNISTNet(net_config['IMG_INPUT_SIZE'] * net_config['IMG_INPUT_SIZE'],
                    net_config['HIDDEN1_SIZE'],
                    net_config['HIDDEN2_SIZE'],
                    net_config['OUTPUT_SIZE'])
-    data_set = MNISTDataSet(net_config['DATA_DIR'], net_config['BATCH_SIZE'])
+    data_set = MNISTDataSet(net_config.data_path, net_config['BATCH_SIZE'])
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(net.parameters(), lr=net_config['LEARNING_RATE'])
     trainer = Trainer(net, criterion, optimizer)
-    last_lost = trainer.full_train(net_config['NUM_EPOCHS'], data_set, net_config['SAVE_EVERY'], f"{RESULTS_DIR}/{net_config['SAVE_DIR']}")
+    last_lost = trainer.full_train(net_config['NUM_EPOCHS'], data_set, net_config['SAVE_EVERY'], net_config.model_dir)
     print("Loss after training is", last_lost)
 
 
 if __name__ == '__main__':
-    example()
+    example("net_001")
