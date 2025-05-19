@@ -215,14 +215,14 @@ class NetConfig:
         return f"MODEL_DIR: {self.model_dir}\nMODEL_DIR: {self.data_dir}\n{str(self.params)}"
 
 
-def example(load_dir):
-    net_config = NetConfig(load_dir)
+def example(module_dir, model_dir):
+    net_config = NetConfig(module_dir, model_dir)
 
     net = MNISTNet(net_config['IMG_INPUT_SIZE'] * net_config['IMG_INPUT_SIZE'],
                    net_config['HIDDEN1_SIZE'],
                    net_config['HIDDEN2_SIZE'],
                    net_config['OUTPUT_SIZE'])
-    data_set = MNISTDataSet(net_config.data_path, net_config['BATCH_SIZE'])
+    data_set = MNISTDataSet(net_config.data_dir, net_config['BATCH_SIZE'])
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(net.parameters(), lr=net_config['LEARNING_RATE'])
@@ -232,4 +232,5 @@ def example(load_dir):
 
 
 if __name__ == '__main__':
-    example("net_001")
+    mnist_module_path = os.path.join(os.getcwd(), "simple-ffnn")
+    example(mnist_module_path, "net_001")
