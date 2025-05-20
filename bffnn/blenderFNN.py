@@ -143,7 +143,8 @@ def verify_diffuse_materials():
 
 def create_curve_object(point_a, point_b, collection, material, thickness=0.01):
     '''
-    Creates a line curve between points a and b.
+    Creates a line curve between points a and b
+    and assignes the indicated material.
     Addapted from:
     https://github.com/DanieliusKr/neural-network-blender/blob/main/blender_script.py
     '''
@@ -176,7 +177,7 @@ def create_curve_object(point_a, point_b, collection, material, thickness=0.01):
 class AbstractVisualizationComponent:
     '''
     Each network component places its visualization objects
-    with a collection.  This base class aids with common functionality.
+    inside a collection.  This base class provides common functionality.
     '''
     def __init__(self, collection_name) -> None:
         '''
@@ -297,7 +298,7 @@ class WeigthLayer(AbstractVisualizationComponent):
     #     '''
     #     success = False
     #     for i, cube in enumerate(self.collection.objects):
-                # TODO: materials is a collection... there are no keyframe_insert there... how do I save this?
+                # TODO: materials is a collection... there are no keyframe_insert there... how do I save this? Can not be done: instead assign and render.
     #         success = cube.data.materials.keyframe_insert(data_path='default_value', frame=frame_number, group=group)
     #     return success
 
