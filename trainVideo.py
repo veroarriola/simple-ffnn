@@ -48,12 +48,19 @@ nv = MNISTFFNNViz(net,
                   (net_config['HIDDEN1_SIZE'], 1),
                   (net_config['HIDDEN2_SIZE'], 1),
                   (net_config['OUTPUT_SIZE'], 1))
-nv.add_bias()
-nv.add_weights()
-
                   
-LOAD_DATA = False
-SAVE_KEYPOINTS = False
+FULL_GEOMETRY = True
+if FULL_GEOMETRY:
+    nv.add_bias()
+    nv.add_weights()
+
+    # Test setting colors
+    nv.weight_0.set_uniform_color(128)
+    nv.weight_1.set_uniform_color(50)
+    nv.weight_2.set_uniform_color(200)
+                  
+LOAD_DATA = True
+RENDER_FRAMES = False
 
 if LOAD_DATA:
     # Load MNIST data
@@ -62,16 +69,16 @@ if LOAD_DATA:
     # Load weights as stored during training
     for weights_file in net_config.files_of_weights():
         #print(weights_file)
-        net.load(os.join(net_config.data_dir, weights_file))
-        break
+        net.load(os.path.join(net_config.model_dir, weights_file))
+        nv.update_params()
+        nv.viz_number(data_set.trainset[0][0])
+        if RENDER_FRAMES:
+            pass
+        break   #  Only one sample
+
+#     
     
-#     nv.add_weights()
-#     nv.add_bias()
-#     nv.update_params()
-    
-#     #nv.weight_0.set_uniform_color(128)
-#     #nv.weight_1.set_uniform_color(50)
-#     #nv.weight_2.set_uniform_color(200)
+
     
 #     bpy.nv = nv
     
