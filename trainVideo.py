@@ -48,8 +48,11 @@ nv = MNISTFFNNViz(net,
                   (net_config['HIDDEN1_SIZE'], 1),
                   (net_config['HIDDEN2_SIZE'], 1),
                   (net_config['OUTPUT_SIZE'], 1))
+nv.add_bias()
+nv.add_weights()
+
                   
-LOAD_DATA = True
+LOAD_DATA = False
 SAVE_KEYPOINTS = False
 
 if LOAD_DATA:

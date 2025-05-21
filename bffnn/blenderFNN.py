@@ -219,7 +219,7 @@ class AbstractVisualizationComponent:
         return collection
 
 
-class WeigthLayer(AbstractVisualizationComponent):
+class WeightLayer(AbstractVisualizationComponent):
     '''
     Creates lines between positions of two layers.
     '''
@@ -239,27 +239,28 @@ class WeigthLayer(AbstractVisualizationComponent):
                 create_curve_object(point_a, point_b, collection, mat)
 
     # TODO: Now materials must be reassigned, not modified when values change.  
-    # def _init_material_array(self):
-    #     '''
-    #     Creates a local 2D array as direct access to the grids of
-    #     materials of each curve within the collection of this component.
-    #     First dimension corresponds to neurons at output layer,
-    #     second dimension are neurons at input layer.
-    #     '''
-    #     num_input = len(self.input_locations)
-    #     num_output = len(self.output_locations)
-    #     grid_materials = np.empty((num_output, num_input), dtype=object)
-    #     i = 0
-    #     j = 0
-    #     for curve in self.collection.all_objects:
+    def _init_material_array(self):
+        '''
+        Creates a local 2D array as direct access to the grids of
+        materials of each curve within the collection of this component.
+        First dimension corresponds to neurons at output layer,
+        second dimension are neurons at input layer.
+        '''
+        num_input = len(self.input_locations)
+        num_output = len(self.output_locations)
+        grid_materials = np.empty((num_output, num_input), dtype=object)
+        i = 0
+        j = 0
+        for curve in self.collection.all_objects:
     #         #print([mat for mat in curve.data.materials])
     #         #grid_materials[i,j] = curve.data.materials[DIFFUSE_GRAY_MATERIAL_ID].diffuse_color
-    #         grid_materials[i,j] = curve.data.materials[0]
-    #         j += 1
-    #         if j == num_input:
-    #             j = 0
-    #             i += 1
-    #     return grid_materials
+              #
+            grid_materials[i, j] = curve.data.materials
+            j += 1
+            if j == num_input:
+                j = 0
+                i += 1
+        return grid_materials
     
     def set_uniform_color(self, value):
         '''
@@ -308,7 +309,8 @@ class BiasLayer(AbstractVisualizationComponent):
     Creates a small box under each neuron to show the value of its
     bias.
     '''
-    def __init__(self, neuron_locations, size, collection_name) -> None:
+    def __init__(self, grid_size, neuron_locations, size, collection_name) -> None:
+        self.grid_size = grid_size
         self.neuron_locations = neuron_locations
         self.size = size
         super().__init__(collection_name)
@@ -332,6 +334,26 @@ class BiasLayer(AbstractVisualizationComponent):
             cube.scale = (size, size, size / 4)
             cube.data.materials.clear()
             cube.data.materials.append(material)
+
+    def _init_material_array(self):
+        '''
+        Creates a local 2D array as direct access to the grid
+        materials of each cube within the given collection
+        '''
+        self.num_rows, self.num_cols = self.grid_size
+        n_x = self.num_cols
+        n_z = self.num_rows
+        grid_materials = np.empty((n_z, n_x), dtype=object)
+        i = 0
+        j = 0
+        for cube in self.collection.all_objects:
+            #grid_materials[i,j] = cube.data.materials[0].node_tree.nodes['Emission'].inputs['Strength']
+            grid_materials[i, j] = cube.data.materials
+            j += 1
+            if j == n_x:
+                j = 0
+                i += 1
+        return grid_materials
 
     def viz_tensor(self, tensor, min_val, max_val):
         """
@@ -414,7 +436,8 @@ class FullLayer2D(AbstractVisualizationComponent):
         i = 0
         j = 0
         for cube in self.collection.all_objects:
-            grid_materials[i,j] = cube.data.materials[0].node_tree.nodes['Emission'].inputs['Strength']
+            #grid_materials[i,j] = cube.data.materials[0].node_tree.nodes['Emission'].inputs['Strength']
+            grid_materials[i, j] = cube.data.materials
             j += 1
             if j == n_x:
                 j = 0
@@ -481,6 +504,11 @@ class MNISTFFNNViz:
         self.hidden2_size = hidden2_size
         self.output_size = output_size
 
+        self.input_grid_size = input_grid_size
+        self.hidden1_grid_size = hidden1_grid_size
+        self.hidden2_grid_size = hidden2_grid_size
+        self.output_grid_size = output_grid_size
+
         #C.scene.eevee.use_bloom = True  # Deprecated by Blender
         verify_emission_materials((180, 150, 200, 0.9))
         verify_diffuse_materials()
@@ -518,17 +546,17 @@ class MNISTFFNNViz:
         """
         Weight edges
         """
-        self.weight_0 = WeigthLayer(
+        self.weight_0 = WeightLayer(
             self.input_layer.component_locations,
             self.hidden1_layer.component_locations,
             W0_WEIGHTS_COLLECTION
         )
-        self.weight_1 = WeigthLayer(
+        self.weight_1 = WeightLayer(
             self.hidden1_layer.component_locations,
             self.hidden2_layer.component_locations,
             W1_WEIGHTS_COLLECTION
         )
-        self.weight_2 = WeigthLayer(
+        self.weight_2 = WeightLayer(
             self.hidden2_layer.component_locations,
             self.output_layer.component_locations,
             W2_WEIGHTS_COLLECTION
@@ -539,16 +567,19 @@ class MNISTFFNNViz:
         Bias cubes
         """
         self.bias_0 = BiasLayer(
+            self.hidden1_grid_size,
             self.hidden1_layer.component_locations,
             self.hidden1_layer.size,
             B0_BIAS_COLLECTION
         )
         self.bias_1 = BiasLayer(
+            self.hidden2_grid_size,
             self.hidden2_layer.component_locations,
             self.hidden2_layer.size,
             B1_BIAS_COLLECTION
         )
         self.bias_2 = BiasLayer(
+            self.output_grid_size,
             self.output_layer.component_locations,
             self.output_layer.size,
             B2_BIAS_COLLECTION
