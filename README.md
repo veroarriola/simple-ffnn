@@ -1,5 +1,5 @@
 # simple-ffnn
-**Proyecto PAPIME PE104425**
+**Proyecto PAPIME PE104425: Visualización animada en 3D de Redes Neuronales**
 
 Código básico para entrenar una red ffnn y crear la animación en blender
 
@@ -53,3 +53,22 @@ Estos archivos serán utilizados por el guión para ```Blender```, ```trainVideo
 determinar el estado de las conexiones de la red al animar su proceso de entrenamiento.
 
 ### Renderizado de video
+
+Se incluye un guión de ejemplo, que produce una animación con cámara fija de una red FFNN.
+El guión se puede editar fácilmente para ilustrar la evolución de los pesos
+y su funcionamiento para diferentes imágenes de entrada.
+Para probarlo utilizándolo como esta los pasos son los siguientes:
+
+1. Ejecutar ```Blender```
+2. En la sección ```Scripting``` abrir el archivo ```trainVideo.py``` y presionar ```Play```
+
+Con estos pasos se deberá:
+1. Crear la geometría de la red: neuronas, conexiones, sesgos y materiales para los objetos.
+2. Cargar los datos del conjunto de entrenamiento (se puede reemplazar por el de prueba)
+3. Cargar los valores de los primeros pesos entrenados y asignar los materiales a los pesos acordemente.
+4. Renderizar un cuadro en formato ```png``` con los pesos y ejemplar cargados.
+
+Se dejó comentada una línea para cambiar el fotograma activo.
+El objetivo es que nuestros animadores puedan configurar cámaras, luces o cualquier otro elemento
+que deseen usar en la animación en la forma tradicional y que con el código puedan desplazarse a
+los fotogramas requeridos antes de renderizar cada cuadro.

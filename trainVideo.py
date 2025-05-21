@@ -61,19 +61,24 @@ if FULL_GEOMETRY:
                   
 LOAD_DATA = True
 RENDER_FRAMES = False
+RENDER_IMAGE_NAME = MODEL_DIR
 
 if LOAD_DATA:
     # Load MNIST data
     data_set = MNISTDataSet(net_config.data_dir, net_config['BATCH_SIZE'])
     
     # Load weights as stored during training
+    frame = 0
     for weights_file in net_config.files_of_weights():
         #print(weights_file)
         net.load(os.path.join(net_config.model_dir, weights_file))
         nv.update_params()
         nv.viz_number(data_set.trainset[0][0])
         if RENDER_FRAMES:
-            pass
+            # Use as needed:
+            #bpy.context.scene.frame_current = 10
+            bpy.context.scene.render.filepath = f"{RENDER_IMAGE_NAME}_{frame}.png"
+            bpy.ops.render.render(write_still=True)
         break   #  Only one sample
 
 #     
