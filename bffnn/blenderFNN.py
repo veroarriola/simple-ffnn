@@ -238,7 +238,6 @@ class WeightLayer(AbstractVisualizationComponent):
             for point_a in self.input_locations:
                 create_curve_object(point_a, point_b, collection, mat)
 
-    # TODO: Now materials must be reassigned, not modified when values change.  
     def _init_material_array(self):
         '''
         Creates a local 2D array as direct access to the grids of
@@ -252,9 +251,6 @@ class WeightLayer(AbstractVisualizationComponent):
         i = 0
         j = 0
         for curve in self.collection.all_objects:
-    #         #print([mat for mat in curve.data.materials])
-    #         #grid_materials[i,j] = curve.data.materials[DIFFUSE_GRAY_MATERIAL_ID].diffuse_color
-              #
             grid_materials[i, j] = curve.data.materials
             j += 1
             if j == num_input:
