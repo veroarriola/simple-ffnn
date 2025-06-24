@@ -125,7 +125,7 @@ class Trainer:
         return acc / len(dataloader)
 
 
-    def full_train(self, num_epocs, data_set, save_every=1, save_dir=None):
+    def full_train(self, num_epochs, data_set, save_every=1, save_dir=None):
         '''
         Train for the number of epocs.
         save_every: save params and statistics every indicated steps if cero or
@@ -134,11 +134,11 @@ class Trainer:
         if save_every > 0 and not save_dir:
             raise Exception
         
-        with open(f"{save_dir}/stats.txt", "a") as myfile:
-            myfile.write("Epoch\tLoss\tTest accuracy\n")
+            with open(f"{save_dir}/stats.txt", "a") as myfile:
+                myfile.write("Epoch\tLoss\tTest accuracy\n")
 
         last_loss = -1
-        for epoch in range(num_epocs):
+        for epoch in range(num_epochs):
             last_loss = self.train_epoch(data_set.trainloader)
             print(f"Completed epoch {epoch} with loss {last_loss}")
 
