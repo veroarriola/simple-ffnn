@@ -15,12 +15,12 @@ sudo apt update
 sudo apt upgrade
 cd 4.4/python/
 ./bin/python3.11 -m pip install --upgrade pip
-./bin/python3.11 -m pip install torch torchvision torchaudio
-./bin/python3.11 -m pip install tensorboard
-./bin/python3.11 -m pip install pytorch-ignite
-./bin/python3.11 -m pip install seaborn seaborn_image
 ./bin/python3.11 -m pip install typeguard
 ./bin/python3.11 -m pip install pyyaml
+./bin/python3.11 -m pip install torch torchvision torchaudio
+./bin/python3.11 -m pip install seaborn seaborn_image
+./bin/python3.11 -m pip install tensorboard
+./bin/python3.11 -m pip install pytorch-ignite
 ```
 
 ## Uso
